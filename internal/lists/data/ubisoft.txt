@@ -1,0 +1,16 @@
+# Ubisoft Connect, Rainbow Six Siege, For Honor
+ubisoft.com
+ubi.com
+ubisoftconnect.com
+ubisoft.org
+uplay.com
+rainbow6.com
+r6s.com
+forhonor.com
+ubisoft-orbit.s3.amazonaws.com
+ubisoft-uplay-savegames.s3.amazonaws.com
+ubistatic-a.akamaihd.net
+ubistatic2-a.akamaihd.net
+ubistatic3-a.akamaihd.net
+playfabapi.com
+playfab.com

@@ -1,0 +1,37 @@
+MIT License
+
+Copyright (c) 2026 авторы проекта «Просвет»
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+------------------------------------------------------------------------------
+Сторонние компоненты, которые входят в сборку
+
+zapret (nfqws, winws, fake-файлы)  — MIT, © bol-van
+  https://github.com/bol-van/zapret · текст лицензии: internal/engine/bundle/LICENSE.zapret.txt
+WinDivert (в составе zapret)       — LGPL-3.0 / GPL-2.0, © basil00
+  https://github.com/basil00/WinDivert
+Списки исключений (основа)         — MIT, © Flowseal
+  https://github.com/Flowseal/zapret-discord-youtube
+Идея Telegram-прокси через WebSocket — MIT, © Flowseal
+  https://github.com/Flowseal/tg-ws-proxy (переписано на Go)
+Bubble Tea, Lip Gloss, Bubbles     — MIT, © Charmbracelet, Inc.
+termenv, cancelreader              — MIT, © Christian Muehlhaeuser
+go-winio                           — MIT, © Microsoft
+golang.org/x/sys, x/text           — BSD-3-Clause, © The Go Authors

@@ -1,0 +1,12 @@
+# Telegram: веб-версия, ссылки, CDN (сам клиент идёт через локальный прокси)
+telegram.org
+t.me
+telegram.me
+telegram.dog
+telesco.pe
+tdesktop.com
+telegra.ph
+graph.org
+cdn-telegram.org
+tg.dev
+fragment.com

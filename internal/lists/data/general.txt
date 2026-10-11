@@ -1,0 +1,14 @@
+# Прочее, что ломает DPI: DoH-резолверы, ECH, расширения Twitch
+^dns.google
+^dns.quad9.net
+^dns.nextdns.io
+^doh.opendns.com
+^cloudflare-dns.com
+^freedns.controld.com
+cloudflare-ech.com
+encryptedsni.com
+frankerfacez.com
+ffzap.com
+betterttv.net
+7tv.app
+7tv.io

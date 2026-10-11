@@ -1,0 +1,20 @@
+# YouTube и всё, без чего плеер не грузится
+youtube.com
+youtu.be
+youtube-nocookie.com
+youtubekids.com
+youtubei.googleapis.com
+youtube.googleapis.com
+youtubeembeddedplayer.googleapis.com
+jnn-pa.googleapis.com
+googlevideo.com
+ytimg.com
+ggpht.com
+yt3.googleusercontent.com
+wide-youtube.l.google.com
+youtube-ui.l.google.com
+ytimg.l.google.com
+yt-video-upload.l.google.com
+gstatic.com
+play.google.com
+fonts.googleapis.com
