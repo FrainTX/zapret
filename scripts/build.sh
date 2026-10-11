@@ -91,7 +91,7 @@ case "$WHAT" in
 	*) build_linux; build_windows ;;
 esac
 
-(cd "$DIST" && sha256sum ./*.tar.gz ./*.zip 2>/dev/null | sed 's#  \./#  #' >SHA256SUMS)
+(cd "$DIST" && shopt -s nullglob && sha256sum ./*.tar.gz ./*.zip | sed 's#  \./#  #' >SHA256SUMS)
 # Подпись: ключ из $PROSVET_SIGNING_KEY (CI) или из файла ключа мейнтейнера.
 KEYFILE="${PROSVET_SIGNING_KEY_FILE:-$HOME/.config/prosvet-release/signing.key}"
 if [ -n "${PROSVET_SIGNING_KEY:-}" ] || [ -f "$KEYFILE" ]; then
