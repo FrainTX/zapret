@@ -1,6 +1,7 @@
 package tui
 
 import (
+	"fmt"
 	"net/netip"
 	"os"
 	"path/filepath"
@@ -78,6 +79,12 @@ func TestSnapshot(t *testing.T) {
 	}
 	m := newModel(Options{})
 	m.st, m.w, m.h, m.phase = &st, 132, 40, 0.37
+	if os.Getenv("PROSVET_SNAPSHOT_IDLE") != "" {
+		m.st.Tuning = nil // the steady state, for the README screenshot
+	}
+	if v := os.Getenv("PROSVET_SNAPSHOT_SIZE"); v != "" {
+		fmt.Sscanf(v, "%dx%d", &m.w, &m.h)
+	}
 	m.hist = map[string][]int{"youtube": {190, 185, 200, 176, 182, 182, 179, 181}, "discord": {150, 144, 141, 160, 141}, "game-udp": {49, 47, 51, 47, 46, 47}, "cloud": {300, 340, 310, 320}}
 	m.siege = []games.Sample{mk("westeurope", 52, 1, 7), mk("northeurope", 63, 1, 7), mk("eastus", 132, 1, 7), mk("uaenorth", 140, 2, 7), mk("southcentralus", 154, 2, 7), mk("centralus", 168, 5, 7), mk("westus", 192, 2, 7), mk("southafricanorth", 213, 1, 7), mk("brazilsouth", 234, 1, 7), mk("japaneast", 268, 2, 7), mk("australiaeast", 331, 3, 7), mk("eastasia", 0, 0, 0)}
 	m.siege[len(m.siege)-1].Err = "таймаут"
