@@ -42,12 +42,21 @@ var menuItems = []menuItem{
 		_, cmd := m.keyMain(" ")
 		return m, cmd
 	}},
-	{"Подобрать стратегию", func(m model) string {
+	{"Подобрать стратегию (быстро)", func(m model) string {
 		if m.st == nil || m.st.LastTune.IsZero() {
 			return "ещё не было"
 		}
 		return "последний " + m.st.LastTune.Format("02.01 15:04")
-	}, open(tabTune)},
+	}, func(m model) (model, tea.Cmd) {
+		// Like a service.bat menu entry: choosing it does it. A running
+		// tuning is just shown.
+		m.inMenu, m.tab = false, tabTune
+		if m.tuning() || m.be == nil {
+			return m, nil
+		}
+		mm, cmd := m.keyMain("t")
+		return mm.(model), cmd
+	}},
 	{"Проверить сайты", func(m model) string {
 		if m.st == nil {
 			return ""

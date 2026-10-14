@@ -247,5 +247,5 @@ func (m model) viewNoService(w, h int) string {
 	if m.stErr != nil {
 		msg += "\n\n" + sBlock.Render(truncate(m.stErr.Error(), w-10))
 	}
-	return lipgloss.Place(w, h, lipgloss.Center, lipgloss.Center, sBox.Render(msg))
+	return "\n" + lipgloss.NewStyle().Width(max(20, w-2)).PaddingLeft(1).Render(msg)
 }

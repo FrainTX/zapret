@@ -48,7 +48,7 @@ var (
 	// one framed element (dialogs), square like a console window.
 	sPanel = lipgloss.NewStyle().Padding(0, 1).MarginBottom(1)
 	sBox   = lipgloss.NewStyle().Border(lipgloss.NormalBorder()).BorderForeground(cMuted).Padding(1, 3)
-	sTitle   = lipgloss.NewStyle().Foreground(cMuted).Bold(true)
+	sTitle = lipgloss.NewStyle().Foreground(cMuted).Bold(true)
 )
 
 type rgb struct{ r, g, b uint8 }
