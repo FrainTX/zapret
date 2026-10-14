@@ -30,7 +30,7 @@ import (
 )
 
 // Version of prosvet itself (set by the linker).
-var Version = "1.1.0"
+var Version = "1.1.1"
 
 // GroupStatus is the live state of one traffic group.
 type GroupStatus struct {
