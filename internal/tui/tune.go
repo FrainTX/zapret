@@ -102,13 +102,27 @@ func (m model) viewTune(w, h int) string {
 	}
 
 	// matrix
-	titleW := 22
+	// Columns: name | recent cells | result | best recipe. On a narrow
+	// terminal the recipe column goes first, then cells shrink; no line
+	// ever wraps.
+	titleW := min(22, max(10, w*28/100))
+	const resultW = 13
+	room := w - 1 - titleW - 1 - 2 - resultW
 	maxCells := 0
 	for _, id := range order {
 		maxCells = max(maxCells, len(rows[id].cells))
 	}
-	cellsW := min(max(12, maxCells+maxCells/5), max(12, (w-titleW)/2))
-	bestW := max(20, w-titleW-cellsW-6)
+	need := maxCells + max(0, maxCells-1)/5 // a gap after every 5 cells
+	cellsW, bestW := min(room, need), 0
+	if room >= 44 {
+		cellsW = min(need, room/2)
+		bestW = room - cellsW - 1
+	}
+	cellsW = max(4, cellsW)
+	perCell := cellsW
+	for perCell > 1 && perCell+(perCell-1)/5 > cellsW {
+		perCell--
+	}
 	var lines []string
 	for _, id := range order {
 		r := rows[id]
@@ -117,30 +131,34 @@ func (m model) viewTune(w, h int) string {
 			title = g.Title
 		}
 		cs := r.cells
-		if len(cs) > cellsW {
-			cs = cs[len(cs)-cellsW:]
+		if len(cs) > perCell {
+			cs = cs[len(cs)-perCell:]
 		}
 		var cb strings.Builder
 		for i, c := range cs {
 			if i > 0 && i%5 == 0 {
-				cb.WriteString(sFaint.Render("╎"))
+				cb.WriteString(" ")
 			}
 			cb.WriteString(cell(c.OK, c.Total, strategy.IsBred(c.Candidate)))
 		}
-		best := sFaint.Render("…")
+		result := sFaint.Render("…")
+		label := ""
 		if r.hasBst {
 			b := r.best
-			label := strings.Join(b.Tags, " · ")
+			result = ratioStyle(b.OK, b.Total).Render(fmt.Sprintf("%d/%d", b.OK, b.Total)) + " " + sMuted.Render(ms(b.Latency))
+			l := strings.Join(b.Tags, " · ")
 			st := sMuted
 			if strategy.IsBred(b.Candidate) {
-				label, st = "✦ "+label, sViolet
+				l, st = "✦ "+l, sViolet
 			}
 			if b.Candidate == strategy.None {
-				label = "без обхода"
+				l = "без обхода"
 			}
-			best = ratioStyle(b.OK, b.Total).Render(fmt.Sprintf("%d/%d ", b.OK, b.Total)) + sMuted.Render(pad(ms(b.Latency), 7)) + st.Render(truncate(label, bestW-14))
+			if bestW > 6 {
+				label = " " + st.Render(truncate(l, bestW))
+			}
 		}
-		lines = append(lines, " "+pad(sInk.Render(truncate(title, titleW)), titleW)+" "+pad(cb.String(), cellsW)+"  "+best)
+		lines = append(lines, " "+pad(sInk.Render(truncate(title, titleW)), titleW)+" "+pad(cb.String(), cellsW)+"  "+pad(result, resultW)+label)
 	}
 	if len(lines) == 0 {
 		lines = append(lines, sMuted.Render(" готовлю движок…"))

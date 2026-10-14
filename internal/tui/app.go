@@ -10,6 +10,7 @@ import (
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
+	"github.com/charmbracelet/x/ansi"
 
 	"prosvet/internal/core"
 	"prosvet/internal/games"
@@ -513,7 +514,7 @@ func (m model) View() string {
 		box := sBox.Render(sBold.Render(m.confirm.text) + "\n\n" + keyHint("y", "да") + "   " + keyHint("n", "нет"))
 		body = lipgloss.Place(w, bodyH, lipgloss.Center, lipgloss.Center, box)
 	}
-	body = lipgloss.NewStyle().Width(w).Height(max(0, bodyH)).MaxHeight(max(0, bodyH)).Render(body)
+	body = lipgloss.NewStyle().Height(max(0, bodyH)).MaxHeight(max(0, bodyH)).Render(clip(body, w))
 	return lipgloss.JoinVertical(lipgloss.Left, header, body, footer)
 }
 
@@ -613,4 +614,16 @@ func (m model) viewFooter(w int) string {
 		t = st.Render(truncate(mark+m.toast, max(10, w-2)))
 	}
 	return " " + sFaint.Render(strings.Repeat("─", max(10, min(w-2, 72)))) + "\n" + line + "\n " + t
+}
+
+// clip cuts every line to the terminal width, so nothing ever wraps and
+// pushes the screen out of shape on a narrow window.
+func clip(s string, w int) string {
+	ls := strings.Split(s, "\n")
+	for i, l := range ls {
+		if ansi.StringWidth(l) > w {
+			ls[i] = ansi.Truncate(l, w-1, "…")
+		}
+	}
+	return strings.Join(ls, "\n")
 }
