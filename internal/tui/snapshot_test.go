@@ -93,6 +93,9 @@ func TestSnapshot(t *testing.T) {
 	m.configs = []games.SiegeConfig{{Path: "/home/user/.local/share/Steam/steamapps/compatdata/359550/pfx/drive_c/users/steamuser/Documents/My Games/Rainbow Six - Siege/4e1c…/GameSettings.ini", Hint: "playfab/westeurope", Backup: true}}
 	m.toast, m.toastOK, m.toastAt = "Siege закреплён за Западная Европа · Амстердам (52 мс)", true, now
 	os.MkdirAll(dir, 0o755)
+	m.inMenu = true
+	os.WriteFile(filepath.Join(dir, "Меню.ans"), []byte(m.View()), 0o644)
+	m.inMenu = false
 	for i := range tabNames {
 		m.tab = i
 		os.WriteFile(filepath.Join(dir, tabNames[i]+".ans"), []byte(m.View()), 0o644)

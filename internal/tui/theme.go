@@ -1,8 +1,8 @@
 // Package tui is the full-screen console interface of Просвет.
 //
-// The look follows the name — "light through a gap": a cold night palette
-// (ink, slate, indigo) crossed by a single beam of pale ice-blue light that
-// marks what passes. Everything else stays quiet. No green, no orange.
+// The look follows the name — "light through a gap": greyscale throughout,
+// white for what passes, grey for what passes in part, and one muted red
+// for what is blocked. State is always carried by the glyph too (● ◐ ○).
 package tui
 
 import (
@@ -15,20 +15,20 @@ import (
 
 // Palette.
 var (
-	cInk     = lipgloss.Color("#E7E9F4") // primary text
-	cMuted   = lipgloss.Color("#8A8FAD") // secondary text
-	cFaint   = lipgloss.Color("#4B4F6B") // rules, borders, empty cells
-	cDeep    = lipgloss.Color("#2A2D42") // inactive tab, bar track
-	cBeam    = lipgloss.Color("#A9D6FF") // the accent: light that passes
-	cBeamHot = lipgloss.Color("#E4F3FF")
-	cViolet  = lipgloss.Color("#B3A6FF") // synthesized / special
-	cPartial = lipgloss.Color("#F2E58C") // works in part
-	cBlock   = lipgloss.Color("#FF6F9C") // blocked / error
-	cOnBeam  = lipgloss.Color("#0F1220") // text on the accent
+	cInk     = lipgloss.Color("#E6E6E6") // primary text
+	cMuted   = lipgloss.Color("#8E8E8E") // secondary text
+	cFaint   = lipgloss.Color("#4A4A4A") // rules, borders, empty cells
+	cDeep    = lipgloss.Color("#2A2A2A") // inactive tab, bar track
+	cBeam    = lipgloss.Color("#FFFFFF") // the accent: light that passes
+	cBeamHot = lipgloss.Color("#FFFFFF")
+	cViolet  = lipgloss.Color("#C8C8C8") // synthesized / special (marked ✦ / ◆)
+	cPartial = lipgloss.Color("#A6A6A6") // works in part (marked ◐)
+	cBlock   = lipgloss.Color("#D9605A") // blocked / error — the only colour
+	cOnBeam  = lipgloss.Color("#111111") // text on the accent
 )
 
 // Gradient stops of the beam, from deep indigo through ice to white.
-var beam = []rgb{{0x5B, 0x63, 0xD9}, {0x7E, 0xA4, 0xFF}, {0xA9, 0xD6, 0xFF}, {0xE4, 0xF3, 0xFF}}
+var beam = []rgb{{0x3A, 0x3A, 0x3A}, {0x70, 0x70, 0x70}, {0xB4, 0xB4, 0xB4}, {0xFF, 0xFF, 0xFF}}
 
 var (
 	sInk     = lipgloss.NewStyle().Foreground(cInk)
@@ -44,7 +44,10 @@ var (
 	sKeyDim  = lipgloss.NewStyle().Foreground(cInk).Background(cDeep).Padding(0, 1)
 	sTabOn   = lipgloss.NewStyle().Foreground(cOnBeam).Background(cBeam).Bold(true).Padding(0, 1)
 	sTabOff  = lipgloss.NewStyle().Foreground(cMuted).Padding(0, 1)
-	sPanel   = lipgloss.NewStyle().Border(lipgloss.RoundedBorder()).BorderForeground(cFaint).Padding(0, 1)
+	// sPanel is a plain section: no frame, a little air below. sBox is the
+	// one framed element (dialogs), square like a console window.
+	sPanel = lipgloss.NewStyle().Padding(0, 1).MarginBottom(1)
+	sBox   = lipgloss.NewStyle().Border(lipgloss.NormalBorder()).BorderForeground(cMuted).Padding(1, 3)
 	sTitle   = lipgloss.NewStyle().Foreground(cMuted).Bold(true)
 )
 
@@ -96,7 +99,7 @@ func beamLine(w int, pos float64) string {
 		d := math.Abs(x - pos)
 		glow := math.Exp(-d * d * 18)
 		base := 0.18 + 0.82*glow
-		c := lerp(rgb{0x1C, 0x1F, 0x33}, beamAt(glow), base)
+		c := lerp(rgb{0x22, 0x22, 0x22}, beamAt(glow), base)
 		ch := "─"
 		if glow > 0.85 {
 			ch = "━"

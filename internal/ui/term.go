@@ -31,19 +31,18 @@ func sgr(code, s string) string {
 	return "\x1b[" + code + "m" + s + "\x1b[0m"
 }
 
-// Palette, shared with the full-screen interface (package tui): cold ink
-// and slate, one pale ice-blue beam for "light passes", soft yellow for
-// "in part", rose for "blocked". No green, no orange.
-func Accent(s string) string { return sgr("38;2;169;214;255", s) }
+// Palette, shared with the full-screen interface (package tui): greyscale,
+// white for "passes", grey for "in part", one muted red for "blocked".
+func Accent(s string) string { return sgr("38;2;255;255;255;1", s) }
 func AccentBG(s string) string {
-	return sgr("48;2;169;214;255;38;2;15;18;32;1", s)
+	return sgr("48;2;230;230;230;38;2;17;17;17;1", s)
 }
-func Dim(s string) string    { return sgr("38;2;138;143;173", s) }
+func Dim(s string) string    { return sgr("38;2;142;142;142", s) }
 func Bold(s string) string   { return sgr("1", s) }
-func Red(s string) string    { return sgr("38;2;255;111;156", s) }
-func Amber(s string) string  { return sgr("38;2;242;229;140", s) }
-func Ink(s string) string    { return sgr("38;2;231;233;244", s) }
-func Violet(s string) string { return sgr("38;2;179;166;255", s) }
+func Red(s string) string    { return sgr("38;2;217;96;90", s) }
+func Amber(s string) string  { return sgr("38;2;166;166;166", s) }
+func Ink(s string) string    { return sgr("38;2;230;230;230", s) }
+func Violet(s string) string { return sgr("38;2;200;200;200", s) }
 
 // Width returns the display width of s, ignoring escape sequences.
 func Width(s string) int {

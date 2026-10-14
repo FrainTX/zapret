@@ -87,11 +87,14 @@ type (
 )
 
 type model struct {
-	o     Options
-	be    Backend
-	w, h  int
-	tab   int
-	phase float64
+	o    Options
+	be   Backend
+	w, h int
+	tab  int
+	// inMenu shows the main menu; screens open from it and Esc returns.
+	inMenu bool
+	mcur   int
+	phase  float64
 
 	st    *core.Status
 	stErr error
@@ -144,7 +147,7 @@ func newModel(o Options) model {
 	ti.Placeholder = "example.com"
 	ti.PlaceholderStyle = sFaint
 	ti.CharLimit = 253
-	return model{o: o, be: o.Backend, tab: o.StartTab, hist: map[string][]int{}, input: ti, configs: games.FindSiege()}
+	return model{o: o, be: o.Backend, tab: o.StartTab, inMenu: o.StartTab == 0, hist: map[string][]int{}, input: ti, configs: games.FindSiege()}
 }
 
 // Result tells the caller what the user asked for on the way out.
@@ -382,15 +385,13 @@ func (m model) key(k tea.KeyMsg) (tea.Model, tea.Cmd) {
 	switch s {
 	case "ctrl+c", "q", "й":
 		return m, tea.Quit
-	case "tab", "right", "l":
-		m.tab = (m.tab + 1) % len(tabNames)
-		return m, m.onTab()
-	case "shift+tab", "left", "h":
-		m.tab = (m.tab + len(tabNames) - 1) % len(tabNames)
-		return m, m.onTab()
-	case "1", "2", "3", "4", "5", "6", "7":
-		m.tab = int(s[0] - '1')
-		return m, m.onTab()
+	}
+	if m.inMenu {
+		return m.keyMenu(s)
+	}
+	if s == "esc" || s == "backspace" {
+		m.inMenu = true
+		return m, nil
 	}
 	switch m.tab {
 	case tabOverview, tabTune:
@@ -456,7 +457,7 @@ func (m model) keyMain(s string) (tea.Model, tea.Cmd) {
 		return m, m.act("селекция начата: выведу новые рецепты", func(ctx context.Context, be Backend) error {
 			return be.Tune(ctx, core.TuneOptions{Deep: true, Synth: 8})
 		})
-	case "esc", "x", "ч":
+	case "x", "ч":
 		if m.tuning() {
 			return m, m.act("подбор остановлен", func(ctx context.Context, be Backend) error { return be.CancelTune(ctx) })
 		}
@@ -487,40 +488,43 @@ func (m model) View() string {
 	}
 	w := m.w
 	header := m.viewHeader(w)
-	tabs := m.viewTabs(w)
 	footer := m.viewFooter(w)
-	bodyH := m.h - lipgloss.Height(header) - lipgloss.Height(tabs) - lipgloss.Height(footer)
+	bodyH := m.h - lipgloss.Height(header) - lipgloss.Height(footer)
 	var body string
-	switch m.tab {
-	case tabOverview:
+	switch {
+	case m.inMenu:
+		body = m.viewMenu(w, bodyH)
+	case m.tab == tabOverview:
 		body = m.viewOverview(w, bodyH)
-	case tabTune:
+	case m.tab == tabTune:
 		body = m.viewTune(w, bodyH)
-	case tabGames:
+	case m.tab == tabGames:
 		body = m.viewGames(w, bodyH)
-	case tabTelegram:
+	case m.tab == tabTelegram:
 		body = m.viewTelegram(w, bodyH)
-	case tabTargets:
+	case m.tab == tabTargets:
 		body = m.viewTargets(w, bodyH)
-	case tabLogs:
+	case m.tab == tabLogs:
 		body = m.viewLogs(w, bodyH)
-	case tabSystem:
+	case m.tab == tabSystem:
 		body = m.viewSystem(w, bodyH)
 	}
 	if m.confirm != nil {
-		box := sPanel.BorderForeground(cBeam).Render(sBold.Render(m.confirm.text) + "\n\n" + keyHint("y", "да") + "   " + keyHint("n", "нет"))
+		box := sBox.Render(sBold.Render(m.confirm.text) + "\n\n" + keyHint("y", "да") + "   " + keyHint("n", "нет"))
 		body = lipgloss.Place(w, bodyH, lipgloss.Center, lipgloss.Center, box)
 	}
 	body = lipgloss.NewStyle().Width(w).Height(max(0, bodyH)).MaxHeight(max(0, bodyH)).Render(body)
-	return lipgloss.JoinVertical(lipgloss.Left, header, tabs, body, footer)
+	return lipgloss.JoinVertical(lipgloss.Left, header, body, footer)
 }
 
+// viewHeader is one quiet line: name, where we are, and the state.
 func (m model) viewHeader(w int) string {
-	logo := " " + gradient("П Р О С В Е Т", m.phase, true) + " "
-	state := m.stateLine()
-	gap := w - lipgloss.Width(logo) - lipgloss.Width(state) - 2
-	pos := 0.5 + 0.45*sinPhase(m.phase)
-	return logo + " " + beamLine(max(0, gap), pos) + " " + state
+	title := sBold.Render("zapret")
+	if !m.inMenu {
+		title += sFaint.Render("  /  ") + sInk.Render(tabNames[m.tab])
+	}
+	line := " " + title + sFaint.Render("  ·  ") + m.stateLine()
+	return "\n" + line + "\n " + sFaint.Render(strings.Repeat("─", max(10, min(w-2, 72))))
 }
 
 func sinPhase(p float64) float64 {
@@ -564,38 +568,14 @@ func human(d time.Duration) string {
 	return fmt.Sprintf("%d дн", int(d.Hours()/24))
 }
 
-func (m model) viewTabs(w int) string {
-	var parts []string
-	for i, n := range tabNames {
-		label := fmt.Sprintf("%d %s", i+1, n)
-		if i == m.tab {
-			parts = append(parts, sTabOn.Render(label))
-		} else {
-			parts = append(parts, sTabOff.Render(label))
-		}
-	}
-	row := " " + strings.Join(parts, sFaint.Render("·"))
-	if lipgloss.Width(row) > w {
-		// narrow terminal: numbers only, current one named
-		parts = parts[:0]
-		for i, n := range tabNames {
-			if i == m.tab {
-				parts = append(parts, sTabOn.Render(fmt.Sprintf("%d %s", i+1, n)))
-			} else {
-				parts = append(parts, sTabOff.Render(fmt.Sprint(i+1)))
-			}
-		}
-		row = " " + strings.Join(parts, "")
-	}
-	return row + "\n" + sFaint.Render(strings.Repeat("─", w))
-}
-
 func (m model) viewFooter(w int) string {
 	var keys []string
-	switch m.tab {
-	case tabOverview, tabTune:
+	switch {
+	case m.inMenu:
+		keys = []string{keyHint("↑↓", "выбор"), keyHint("Enter", "открыть")}
+	case m.tab == tabOverview || m.tab == tabTune:
 		if m.tuning() {
-			keys = []string{keyHint("esc", "остановить подбор")}
+			keys = []string{keyHint("x", "остановить подбор")}
 		} else {
 			on := "включить"
 			if m.st != nil && (m.st.Running || m.st.Enabled) {
@@ -603,16 +583,19 @@ func (m model) viewFooter(w int) string {
 			}
 			keys = []string{keyHint("пробел", on), keyHint("t", "подбор"), keyHint("d", "глубокий"), keyHint("s", "вывести новые"), keyHint("c", "проверить")}
 		}
-	case tabGames:
+	case m.tab == tabGames:
 		keys = []string{keyHint("r", "замерить пинг"), keyHint("p", "закрепить ближайший"), keyHint("u", "вернуть как было"), keyHint("v", "мимо VPN")}
-	case tabTelegram:
+	case m.tab == tabTelegram:
 		keys = []string{keyHint("e", "вкл/выкл"), keyHint("o", "открыть в Telegram")}
-	case tabTargets:
+	case m.tab == tabTargets:
 		keys = []string{keyHint("↑↓", "выбор"), keyHint("пробел", "вкл/выкл"), keyHint("a", "свой сайт"), keyHint("x", "исключение"), keyHint("del", "удалить")}
-	case tabLogs:
+	case m.tab == tabLogs:
 		keys = []string{keyHint("↑↓", "листать"), keyHint("G", "в конец")}
-	case tabSystem:
+	case m.tab == tabSystem:
 		keys = []string{keyHint("u", "обновить"), keyHint("a", "автообновление"), keyHint("f", "убрать конфликты"), keyHint("i", "установить службу")}
+	}
+	if !m.inMenu {
+		keys = append(keys, keyHint("esc", "меню"))
 	}
 	keys = append(keys, keyHint("q", "выход"))
 	line := " " + strings.Join(keys, "  ")
@@ -629,5 +612,5 @@ func (m model) viewFooter(w int) string {
 		}
 		t = st.Render(truncate(mark+m.toast, max(10, w-2)))
 	}
-	return sFaint.Render(strings.Repeat("─", w)) + "\n" + line + "\n " + t
+	return " " + sFaint.Render(strings.Repeat("─", max(10, min(w-2, 72)))) + "\n" + line + "\n " + t
 }

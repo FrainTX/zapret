@@ -13,7 +13,7 @@ import (
 
 func panel(title string, w int, body string) string {
 	t := sTitle.Render(strings.ToUpper(title))
-	return sPanel.Width(max(10, w-2)).Render(t + "\n" + body)
+	return sPanel.Width(max(10, w-2)).Render(t + "\n" + sFaint.Render(strings.Repeat("─", max(4, min(w-4, 72)))) + "\n" + body)
 }
 
 // tile is a small dashboard card: a caption, one big value, one remark.
@@ -247,5 +247,5 @@ func (m model) viewNoService(w, h int) string {
 	if m.stErr != nil {
 		msg += "\n\n" + sBlock.Render(truncate(m.stErr.Error(), w-10))
 	}
-	return lipgloss.Place(w, h, lipgloss.Center, lipgloss.Center, sPanel.BorderForeground(cBeam).Padding(1, 3).Render(msg))
+	return lipgloss.Place(w, h, lipgloss.Center, lipgloss.Center, sBox.Render(msg))
 }

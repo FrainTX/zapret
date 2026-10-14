@@ -33,7 +33,7 @@ func (m model) viewTune(w, h int) string {
 	}
 	t := tp.Tuning
 	if (t == nil || (!t.Active && t.Report == nil)) && m.rep == nil {
-		return lipgloss.Place(w, h, lipgloss.Center, lipgloss.Center, sPanel.Padding(1, 3).Render(
+		return lipgloss.Place(w, h, lipgloss.Center, lipgloss.Center, sBox.Render(
 			sBold.Render("Автоподбор")+"\n\n"+
 				sMuted.Render("Просвет проверит каждую группу трафика без обхода, затем рецепты\nиз каталога, имена-приманки — и выведет новые, скрещивая лучшие.\n\n")+
 				keyHint("t", "быстрый · 1–3 мин")+"   "+keyHint("d", "глубокий · 5–10 мин")+"   "+keyHint("s", "селекция · 10–20 мин")))
